@@ -1,65 +1,100 @@
-# Raspberry Pi Button Script Autostart
+# Orange Pi Button Script Autostart
 
-This guide explains how to set up a systemd service to run a Python script on Raspberry Pi startup.
+This guide explains how to set up a systemd service to run a Python script on Orange Pi startup.
 
 ## Prerequisites
 
-- Raspberry Pi running a compatible OS (e.g., Raspberry Pi OS).
+- Orange Pi running a compatible OS (e.g., Orange Pi OS).
 - Basic knowledge of working with the terminal.
+
+SSH Credentials
+User : root
+Password : orangepi
 
 ## Steps
 
-1. **Create a systemd Service File**:
 
-    Open a terminal on your Raspberry Pi and create a new systemd service file using a text editor (e.g., nano):
+###### Increase Watch limit
 
-    ```bash
-    sudo nano /etc/systemd/system/button_script.service
-    ```
+    sudo nano /etc/sysctl.conf
 
-    Add the following content to the file:
+Add this line to the end of the file.
 
-    ```plaintext
-    [Unit]
-    Description=Button Script Service
-    After=network.target
+    fs.inotify.max_user_watches=524288
 
-    [Service]
-    ExecStart=/usr/bin/python3 /home/pi/button_script.py
-    WorkingDirectory=/home/pi
-    StandardOutput=inherit
-    StandardError=inherit
-    Restart=always
-    User=pi
+The new value can then be loaded in by running
 
-    [Install]
-    WantedBy=multi-user.target
-    ```
+    sudo sysctl -p
 
-    Make sure to adjust the `ExecStart` line to the correct path of your Python script and the `User` field if you're not using the default "pi" user.
+###### Install PIP
 
-2. **Save and Close the File**:
+Enter the following command to update Linux:
 
-    For example, in nano, press `Ctrl + O` to save the file, and then press `Enter`. Then press `Ctrl + X` to exit the text editor.
+    sudo apt update
 
-3. **Enable and Start the systemd Service**:
+Enter the following command to install pip3:
 
-    Run the following commands to enable and start your new systemd service:
+    sudo apt install python3-pip
 
-    ```bash
-    sudo systemctl enable button_script.service
-    sudo systemctl start button_script.service
-    ```
+###### Install Setuptools
 
-    This will make the service start automatically on boot and will start it immediately.
+Enter the following command to install setuptools:
 
-4. **Check the Status of the Service (Optional)**:
+    sudo pip3 install setuptools
 
-    You can check the status of the service to ensure it's running correctly:
 
-    ```bash
-    sudo systemctl status button_script.service
-    ```
+###### Install flask
+
+Enter the following command to install flask:
+
+    sudo pip3 install flask
+
+
+###### Install OPi.GPIO
+
+Enter the following command to install OPi.GPIO:
+
+    sudo pip3 install --upgrade OPi.GPIO
+
+    More Info @ https://opi-gpio.readthedocs.io/en/latest/install.html
+
+
+###### Copy Script
+Copy button_script.py script from Repository to /home directory
+
+Check for Working Script
+
+    python3 /home/button_script.py
+###### Autorun Script
+
+Copy the python file to /bin:
+
+    sudo cp -i /home/button_script.py /bin
+
+Add A New Cron Job:
+
+    sudo crontab -e
+
+Scroll to the bottom and add the following line (after all the #'s):
+
+    @reboot python3 /bin/button_script.py &
+
+    The “&” at the end of the line means the command is run in the background and it won’t stop the system booting up.
+
+###### Setup Network
+
+- Use  Command  "sudo orangepi-config"  to  connect  to  Wifi  and  access  settings
+
+- Use  Command  "nmtui"  to  setup IP Addresses
+ (http://www.orangepi.org/orangepiwiki/index.php/How_to_set_a_static_IP_address)
+
+-  `/etc/network/interfaces.d/wlan0`  ---->  WiFi  Static  IP  Settings  
+-  `/etc/network/interfaces.d/eth0`  ---->  Ethernet  Static  IP  Settings  
+
+
+###### Test it:
+
+    sudo reboot
 
 ## Conclusion
 
